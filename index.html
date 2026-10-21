@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MRA-ADRC: Model-Reference Adaptive ADRC for Online Control-Gain Commissioning of Robot Manipulators</title>
+  <meta name="description" content="Project page for MRA-ADRC, a model-reference adaptive active disturbance rejection control framework that commissions the ADRC control-input gain b0 online on robot manipulators.">
+  <meta property="og:title" content="MRA-ADRC: Online Control-Gain Commissioning for Robot Manipulators">
+  <meta property="og:description" content="Model-reference adaptive ADRC that commissions the control-input gain on the machine, validated on Neuromeka Indy7 and Huayan Elfin E10-L arms.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://mra-adrc.github.io/">
+  <meta property="og:image" content="https://mra-adrc.github.io/static/video/poster.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="static/style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230f1a2b'/%3E%3Ctext x='32' y='42' font-family='Inter,Arial,sans-serif' font-size='28' font-weight='800' fill='%23e8edf5' text-anchor='middle'%3Eb%3C/text%3E%3Ctext x='46' y='50' font-family='Inter,Arial,sans-serif' font-size='16' font-weight='700' fill='%23ef4d4d' text-anchor='middle'%3E0%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">MRA-ADRC</p>
+    <h1>Model-Reference Adaptive Active Disturbance Rejection Control for Online Control-Gain Commissioning of Robot Manipulators</h1>
+    <p class="authors">
+      <!-- AUTHORS: replace this line after the review period. -->
+      <span>Anonymous Author(s)</span>
+      <span class="sep">·</span>
+      <span>Under review, 2026</span>
+    </p>
+    <nav class="buttons" aria-label="Links">
+      <a class="btn btn-primary" href="#video">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+        Watch the video
+      </a>
+      <span class="btn btn-disabled" aria-disabled="true" title="The paper is under double-blind review">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h9l5 5v15H6zM14 3.5V8h4.5M8 12h8M8 16h8"/></svg>
+        Paper (coming soon)
+      </span>
+      <a class="btn" href="#bibtex">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v16H7zM10 8h4M10 12h4M10 16h2"/></svg>
+        BibTeX
+      </a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <section id="video" class="section video-section">
+    <div class="wrap">
+      <figure class="video-figure">
+        <video controls preload="metadata" playsinline poster="static/video/poster.jpg">
+          <source src="static/video/MRA-ADRC_intro_en.mp4" type="video/mp4">
+          Your browser does not support embedded video.
+          <a href="static/video/MRA-ADRC_intro_en.mp4">Download the video (MP4, 19 MB)</a>.
+        </video>
+        <figcaption>
+          Three-minute overview. The adaptation law, on-machine commissioning of the gain on the
+          Indy7 and the Elfin E10-L, and payload tracking against the production controller.
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="abstract" class="section">
+    <div class="wrap narrow">
+      <h2>Abstract</h2>
+      <p class="abstract">
+        Active disturbance rejection control (ADRC) reduces model dependence by estimating and
+        compensating for lumped disturbances online, but its control-input gain <i>b</i><sub>0</sub>
+        must still be supplied by the designer and is typically tuned manually for each joint. This
+        paper proposes a model-reference adaptive ADRC (MRA-ADRC) framework for automatic on-machine
+        commissioning of <i>b</i><sub>0</sub> in robot manipulators. During a bounded sinusoidal
+        calibration motion, the plant response is compared with a reference model through an
+        absolute-value position&ndash;velocity mismatch, and the resulting scalar adaptation updates
+        <i>b</i><sub>0</sub> without a model-derived regressor or torque sensing. A cycle-envelope
+        dead-zone terminates the adaptation automatically once the response mismatch remains below a
+        prescribed level. The analysis establishes uniformly ultimately bounded tracking on an
+        analytical safe set, local exponential convergence of the averaged gain estimate to a
+        residual-shifted equilibrium, and a stopping-error bound linear in the dead-zone width. On a
+        6-DOF Neuromeka Indy7 the method turns a coarse initial estimate into a commissioned gain
+        profile and recovers 88% of the tracking degradation caused by the initial gain mismatch.
+        The profile transfers without retuning across units of the same model, where it tracks better
+        than the deployed production controller under a payload absent at commissioning, and the
+        procedure commissions all six joints of a manipulator from a different manufacturer with the
+        same closed-loop benefit. With the ADRC loop held fixed, the commissioned gain improves
+        tracking severalfold over an over-estimated one on both arms, including on a Cartesian
+        straight-line task.
+      </p>
+    </div>
+  </section>
+
+  <section id="method" class="section alt">
+    <div class="wrap">
+      <h2>Method</h2>
+      <figure class="figure">
+        <img src="static/img/mra_adrc_block.png" width="2400" height="1102" loading="lazy"
+             alt="Block diagram of MRA-ADRC. An ADRC loop on top drives the plant, a reference model below runs on the same excitation, their mismatch feeds the adaptation, and the gain estimate is returned into the ADRC loop at two places.">
+        <figcaption>
+          MRA-ADRC architecture. The plant's motion from the ADRC loop (top) and the reference model's
+          motion (bottom) meet at the mismatch, and the adaptation returns <i>b&#770;</i>, the only
+          signal it feeds back, into the ADRC loop at two places (dashed red).
+        </figcaption>
+      </figure>
+
+      <ol class="steps">
+        <li>
+          <h3>One gain left to the designer</h3>
+          <p>The extended state observer of ADRC estimates and cancels the lumped disturbance, yet the
+          control-input gain <i>b</i><sub>0</sub> is still supplied by hand and is usually tuned joint
+          by joint.</p>
+        </li>
+        <li>
+          <h3>Reference-model mismatch</h3>
+          <p>During a bounded sinusoidal calibration motion a reference model runs on the same
+          excitation. The absolute-value position&ndash;velocity mismatch between plant and model
+          tells whether the current estimate is too high or too low.</p>
+        </li>
+        <li>
+          <h3>Scalar adaptation</h3>
+          <p>That scalar signal updates <i>b&#770;</i> online. No model-derived regressor and no torque
+          sensing are required, and <i>b&#770;</i> is the only signal returned to the ADRC loop.</p>
+        </li>
+        <li>
+          <h3>Automatic stop</h3>
+          <p>A cycle-envelope dead-zone freezes <i>b&#770;</i> once the mismatch stays below a prescribed
+          level for two consecutive cycles. On the Indy7 each joint stops within 20 to 57 seconds.</p>
+        </li>
+      </ol>
+
+      <div class="two-col">
+        <div>
+          <h3 class="minor">What the analysis guarantees</h3>
+          <ul class="plain">
+            <li>Uniformly ultimately bounded tracking on an analytical safe set of gain estimates.</li>
+            <li>Local exponential convergence of the averaged gain estimate to a residual-shifted equilibrium.</li>
+            <li>A stopping-error bound that is linear in the dead-zone width.</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="minor">Contributions</h3>
+          <ul class="plain">
+            <li>An online gain-commissioning law that adds model-reference adaptation to the ADRC loop, with proofs of bounded tracking, local convergence and stopping accuracy.</li>
+            <li>A fully automatic commissioning procedure whose profile transfers across units of the same model, so one run for each model replaces the unit-by-unit factory tuning pass.</li>
+            <li>Hardware validation of the closed-loop benefit, namely better tracking than the deployed production controller under a 4.5 kg payload absent at commissioning, at matched actuator effort.</li>
+            <li>Validation on multiple Indy7 units, a URDF-matched simulation, and a second manufacturer's Elfin E10-L, where the full procedure commissions all six joints automatically.</li>
+            <li>An evaluation that holds the ADRC loop fixed and changes only the gain, isolating the contribution of commissioning itself, on both arms and on a Cartesian straight line.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="results" class="section">
+    <div class="wrap">
+      <h2>Results</h2>
+
+      <div class="stats" role="list">
+        <div class="stat" role="listitem">
+          <span class="stat-value">88<span class="unit">%</span></span>
+          <span class="stat-label">of the tracking degradation caused by the initial gain mismatch is recovered on the Indy7</span>
+        </div>
+        <div class="stat" role="listitem">
+          <span class="stat-value">16<span class="unit">×</span></span>
+          <span class="stat-label">lower tracking RMS than the production controller under a 4.5 kg payload, one profile deployed on four Indy7 units</span>
+        </div>
+        <div class="stat" role="listitem">
+          <span class="stat-value">4.44 <span class="arrow">&rarr;</span> 0.45<span class="unit">mm</span></span>
+          <span class="stat-label">tool-tip RMS error on a Cartesian straight line, PID baseline versus MRA-ADRC, Indy7 with 4.5 kg</span>
+        </div>
+        <div class="stat" role="listitem">
+          <span class="stat-value">2<span class="unit">manufacturers</span></span>
+          <span class="stat-label">Neuromeka Indy7 and Huayan Robotics Elfin E10-L, all six joints commissioned automatically on each</span>
+        </div>
+      </div>
+
+      <h3>Commissioning on the machine</h3>
+      <div class="fig-row">
+        <figure class="figure">
+          <img src="static/img/neuro2_autostop_bhat_qerr.png" width="2000" height="1640" loading="lazy"
+               alt="Six panels of gain estimate and tracking error over time, one per joint, each ending at its automatic stop.">
+          <figcaption>
+            Criterion-stopped commissioning on one Indy7 unit (six single-joint runs,
+            <i>b</i><sub>init</sub> = 1.0, cycle-envelope stop). Each run ends at its automatic stop,
+            20 to 57 s, so the time axes differ by joint. Upper row of each block, <i>b&#770;</i> with
+            the dotted line marking the frozen value. Lower row, tracking error.
+          </figcaption>
+        </figure>
+        <figure class="figure">
+          <img src="static/img/b0_profile_merged.png" width="1380" height="945" loading="lazy"
+               alt="Gain profile by joint for three Indy7 units and the simulation, sharing the same shape with a dip at joint 4.">
+          <figcaption>
+            Gain profile by joint. The criterion-stopped hardware profile, the settled simulation
+            estimate, and two earlier time-limited runs, all from <i>b</i><sub>init</sub> = 1.0.
+            Hardware and simulation share the shape and the J4 dip (correlation 0.85), and the three
+            units differ by about 16% on average.
+          </figcaption>
+        </figure>
+      </div>
+
+      <h3>One profile, four units, 4.5 kg payload</h3>
+      <figure class="figure">
+        <img src="static/img/compare_rms_units_spread.png" width="2400" height="634" loading="lazy"
+             alt="Three bar charts: tracking error RMS by joint under MRA-ADRC, under the production baseline, and the standard deviation across units.">
+        <figcaption>
+          Tracking error RMS by joint, grouped by controller. Left, the four units under MRA-ADRC.
+          Center, the same units under the production baseline, on its own scale. Right, the
+          standard deviation across the four units on a logarithmic scale. The shaded band highlights
+          J2 and J3, where MRA-ADRC's error stays nearly constant across the four units. The aggregate
+          improvement is 15.8× to 16.6× at equal command torque RMS.
+        </figcaption>
+      </figure>
+
+      <h3>Same ADRC loop, only the gain changes</h3>
+      <p class="lead">
+        The closed-loop comparisons above mix the commissioned gain with the observer. This
+        evaluation holds the ADRC loop fixed and swaps only <i>b</i><sub>0</sub>, with a joint PID loop
+        as a reference, under the 4.5 kg payload. Joint entries are quadratic means over the six
+        joints, the tool error is measured on the Cartesian line, and torque is the commanded RMS on
+        the square.
+      </p>
+      <div class="table-wrap">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th scope="col">Arm</th>
+              <th scope="col">Controller</th>
+              <th scope="col">Square<br><span class="u">mrad</span></th>
+              <th scope="col">Line<br><span class="u">mrad</span></th>
+              <th scope="col">Tool RMS<br><span class="u">mm</span></th>
+              <th scope="col">Tool max<br><span class="u">mm</span></th>
+              <th scope="col">Torque<br><span class="u">N·m</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row" rowspan="3">Indy7</th><td class="ctl">PID baseline</td><td>6.61</td><td>3.71</td><td>4.44</td><td>6.20</td><td>42.9</td></tr>
+            <tr><td class="ctl">ADRC, <i>b</i><sub>0</sub> = 1.0 (uncommissioned)</td><td>10.69</td><td>1.63</td><td>2.06</td><td>7.59</td><td>44.5</td></tr>
+            <tr class="hl"><td class="ctl">MRA-ADRC</td><td>1.54</td><td>0.42</td><td>0.45</td><td>2.55</td><td>42.7</td></tr>
+            <tr><th scope="row" rowspan="3">Elfin E10-L</th><td class="ctl">PID baseline</td><td>41.28</td><td>53.92</td><td>128.06</td><td>168.77</td><td>50.2</td></tr>
+            <tr><td class="ctl">ADRC, 4× commissioned <i>b</i><sub>0</sub></td><td>0.88</td><td>0.57</td><td>0.59</td><td>2.95</td><td>49.3</td></tr>
+            <tr class="hl"><td class="ctl">MRA-ADRC</td><td>0.43</td><td>0.22</td><td>0.18</td><td>0.87</td><td>49.5</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="fig-row tcp">
+        <figure class="figure">
+          <img src="static/img/s5_square_tcp_frames.jpg" width="2000" height="1052" loading="lazy"
+               alt="Video frames of the Indy7 and the Elfin drawing a square with the commanded path and the magnified tool error overlaid for three controllers.">
+          <figcaption>
+            Payload square with 4.5 kg, one cycle over a video frame of each run. Dashed white,
+            commanded tool path. Colored, commanded path plus the measured tool error, magnified as
+            labeled. Top, Indy7. Bottom, Elfin E10-L.
+          </figcaption>
+        </figure>
+        <figure class="figure">
+          <img src="static/img/s5_line_tcp_frames.jpg" width="1800" height="1654" loading="lazy"
+               alt="Video frames of the Indy7 and the Elfin tracing a Cartesian straight line with the tool error overlaid for three controllers.">
+          <figcaption>
+            Cartesian straight line, drawn in the same way. Top, Indy7, passes two to five. Bottom,
+            Elfin E10-L, the first round trip.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="platforms" class="section alt">
+    <div class="wrap">
+      <h2>Platforms</h2>
+      <div class="platforms">
+        <figure class="figure platform">
+          <img src="static/img/neuromeka_robot_payload.jpg" width="1000" height="1403" loading="lazy"
+               alt="Neuromeka Indy7 holding a black case as payload, elbow bent and flange forward.">
+          <figcaption>Neuromeka Indy7, 6-DOF, with the 4.5 kg payload in the start posture.</figcaption>
+        </figure>
+        <figure class="figure platform">
+          <img src="static/img/elfin_robot_payload.jpg" width="631" height="602" loading="lazy"
+               alt="Huayan Robotics Elfin E10-L holding a black case as payload.">
+          <figcaption>Huayan Robotics Elfin E10-L, 6-DOF, with the same 4.5 kg payload.</figcaption>
+        </figure>
+      </div>
+      <p class="lead">
+        Both arms run in torque mode at the joint level. The commissioning procedure, including the
+        hardware floor measurement, was run end to end on both, and the same closed-loop evaluation
+        was repeated on each.
+      </p>
+    </div>
+  </section>
+
+  <section id="bibtex" class="section">
+    <div class="wrap narrow">
+      <h2>BibTeX</h2>
+      <pre class="bibtex"><code>@article{mraadrc2026,
+  title   = {Model-Reference Adaptive Active Disturbance Rejection Control
+             for Online Control-Gain Commissioning of Robot Manipulators},
+  author  = {Anonymous Author(s)},
+  journal = {Under review},
+  year    = {2026}
+}</code></pre>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap narrow">
+    <p>This page accompanies a manuscript under double-blind review. Author and affiliation
+    information will be added upon publication.</p>
+  </div>
+</footer>
+
+</body>
+</html>

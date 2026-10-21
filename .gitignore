@@ -1,0 +1,4 @@
+.omc/
+.claude/
+*.bak*
+.DS_Store
