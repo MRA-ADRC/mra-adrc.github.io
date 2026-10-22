@@ -286,3 +286,12 @@ body {
   font-weight: 700;
   background: #fff4f4;
 }
+
+/* Wide rendered clips (three panels side by side) must not be cropped to 4:3. */
+.paper-figure--wide video {
+  aspect-ratio: auto;
+  object-fit: contain;
+  object-position: center;
+  width: 100%;
+  background: #0f1a2b;
+}

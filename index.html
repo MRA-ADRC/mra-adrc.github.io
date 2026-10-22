@@ -255,6 +255,51 @@
         </div>
         <div class="columns is-multiline">
           <div class="column is-half">
+            <figure class="paper-figure paper-figure--wide">
+              <video autoplay muted loop playsinline>
+                <source src="./static/videos/clips/sim_tuning_indy7_j0.mp4" type="video/mp4">
+              </video>
+              <figcaption>Commissioning in simulation. The same loop excites the base joint of a
+                URDF-matched Indy7 in Isaac Sim, and the estimate descends from 1.0 into the
+                dead-zone band (2&times; speed).</figcaption>
+            </figure>
+          </div>
+          <div class="column is-half">
+            <figure class="paper-figure paper-figure--wide">
+              <video autoplay muted loop playsinline>
+                <source src="./static/videos/clips/hw_commissioning_indy7.mp4" type="video/mp4">
+              </video>
+              <figcaption>Commissioning on the real Indy7. Each joint's estimate descends from 1.0
+                and stops automatically within a minute. The six frozen values form the deployed
+                profile (6&times; speed).</figcaption>
+            </figure>
+          </div>
+          <div class="column is-half">
+            <figure class="paper-figure paper-figure--wide">
+              <video autoplay muted loop playsinline>
+                <source src="./static/videos/clips/stop_criterion.mp4" type="video/mp4">
+              </video>
+              <figcaption>How the stop is decided, base joint J0. Stage A runs four fixed-gain
+                probes with adaptation off. The smallest mismatch envelope sets the dead-zone
+                width and the slope of the cycle mean sets the adaptation rate. Stage B then
+                adapts from the initial estimate and freezes once two consecutive cycles stay
+                below the width.</figcaption>
+            </figure>
+          </div>
+          <div class="column is-half">
+            <figure class="paper-figure paper-figure--wide">
+              <video autoplay muted loop playsinline>
+                <source src="./static/videos/clips/sim_vs_hardware.mp4" type="video/mp4">
+              </video>
+              <figcaption>Simulation versus hardware, joint by joint. Both settle to the same
+                profile shape with the J4 dip (correlation 0.85). The absolute values differ
+                because the plants differ, mainly in friction, so this is a comparison of
+                shape.</figcaption>
+            </figure>
+          </div>
+        </div>
+        <div class="columns is-multiline">
+          <div class="column is-half">
             <figure class="paper-figure">
               <img src="./static/images/neuro2_autostop_bhat_qerr.png"
                    alt="Six panels of gain estimate and tracking error over time, one per joint, each ending at its automatic stop.">
@@ -333,6 +378,54 @@
               <tr class="is-ours"><td>MRA-ADRC</td><td class="has-text-right">0.43</td><td class="has-text-right">0.22</td><td class="has-text-right">0.18</td><td class="has-text-right">0.87</td><td class="has-text-right">49.5</td></tr>
             </tbody>
           </table>
+        </div>
+        <div class="content has-text-justified">
+          <p>
+            In the clips below the three controllers run the same task under the same payload.
+            Left to right in each clip: the PID baseline, the same ADRC loop with the
+            uncommissioned gain, and MRA-ADRC. The dot marks the tool, its error from the
+            commanded path is drawn magnified as labeled, and the lower strip traces the
+            commanded (dashed) and actual tool path. All clips play at 2.4&times; speed.
+          </p>
+        </div>
+        <div class="columns is-multiline">
+          <div class="column is-half">
+            <figure class="paper-figure paper-figure--wide">
+              <video autoplay muted loop playsinline>
+                <source src="./static/videos/clips/indy7_line.mp4" type="video/mp4">
+              </video>
+              <figcaption>Indy7, Cartesian straight line along <i>y</i> with 4.5 kg. The
+                uncommissioned gain is <i>b</i><sub>0</sub> = 1.0.</figcaption>
+            </figure>
+          </div>
+          <div class="column is-half">
+            <figure class="paper-figure paper-figure--wide">
+              <video autoplay muted loop playsinline>
+                <source src="./static/videos/clips/indy7_square.mp4" type="video/mp4">
+              </video>
+              <figcaption>Indy7, payload square with 4.5 kg. The PID baseline sags under the
+                payload while MRA-ADRC stays on the commanded path.</figcaption>
+            </figure>
+          </div>
+          <div class="column is-half">
+            <figure class="paper-figure paper-figure--wide">
+              <video autoplay muted loop playsinline>
+                <source src="./static/videos/clips/elfin_square.mp4" type="video/mp4">
+              </video>
+              <figcaption>Elfin E10-L, payload square with 4.5 kg. The comparison gain is
+                4&times; the commissioned profile.</figcaption>
+            </figure>
+          </div>
+          <div class="column is-half">
+            <figure class="paper-figure paper-figure--wide">
+              <video autoplay muted loop playsinline>
+                <source src="./static/videos/clips/elfin_line.mp4" type="video/mp4">
+              </video>
+              <figcaption>Elfin E10-L, Cartesian straight line along <i>y</i> with 4.5 kg. The
+                PID baseline is drawn at true scale because its error is too large to
+                magnify.</figcaption>
+            </figure>
+          </div>
         </div>
         <div class="columns is-multiline">
           <div class="column is-half">
