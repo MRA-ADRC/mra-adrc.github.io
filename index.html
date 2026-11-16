@@ -102,31 +102,25 @@
         <h2 class="title is-3">Abstract</h2>
         <div class="content has-text-justified">
           <p>
-            Active disturbance rejection control (ADRC) reduces model dependence by estimating and
-            compensating for lumped disturbances online, but its control-input gain <i>b</i><sub>0</sub>
-            must still be supplied by the designer and is typically tuned manually for each joint.
+            Active disturbance rejection control (ADRC) reduces dependence on a dynamic model, but
+            its control-input gain still requires commissioning. This paper proposes
+            model-reference adaptive ADRC (MRA-ADRC), integrating a response-based scalar update and
+            cycle-envelope stopping rule into a 1 kHz robot torque loop. The update uses measured
+            position&ndash;velocity mismatch without a model-derived regressor or joint torque
+            measurements. Fixed-gain probes around a working prior set the adaptation rate and
+            stopping threshold; two qualifying cycles freeze the gain for subsequent operation.
+            Conditional tracking boundedness, local averaged-gain convergence, and a stopping-error
+            bound explain the roles of gain sensitivity and residual bias.
           </p>
           <p>
-            This paper proposes a model-reference adaptive ADRC (MRA-ADRC) framework for automatic
-            on-machine commissioning of <i>b</i><sub>0</sub> in robot manipulators. During a bounded
-            sinusoidal calibration motion, the plant response is compared with a reference model
-            through an absolute-value position&ndash;velocity mismatch, and the resulting scalar
-            adaptation updates <i>b</i><sub>0</sub> without a model-derived regressor or torque
-            sensing. A cycle-envelope dead-zone terminates the adaptation automatically once the
-            response mismatch remains below a prescribed level. The analysis establishes uniformly
-            ultimately bounded tracking on an analytical safe set, local exponential convergence of
-            the averaged gain estimate to a residual-shifted equilibrium, and a stopping-error bound
-            linear in the dead-zone width.
-          </p>
-          <p>
-            On a 6-DOF Neuromeka Indy7 the method turns a coarse initial estimate into a
-            commissioned gain profile and recovers 88% of the tracking degradation caused by the
-            initial gain mismatch. The profile transfers without retuning across units of the same
-            model, where it tracks better than the deployed production controller under a payload
-            absent at commissioning, and the procedure commissions all six joints of a manipulator
-            from a different manufacturer with the same closed-loop benefit. With the ADRC loop held
-            fixed, the commissioned gain improves tracking severalfold over an over-estimated one on
-            both arms, including on a Cartesian straight-line task.
+            Experiments establish three capabilities within the tested conditions. First,
+            commissioning stopped on all six joints of both a Neuromeka Indy7 and a Huayan Robotics
+            Elfin E10-L without observed torque saturation. Second, one Indy7 profile was reused
+            unchanged on four other units with a payload absent during commissioning, reducing
+            aggregate tracking error approximately sixteenfold relative to the deployed production
+            controller. Third, holding the ADRC loop fixed while replacing overestimated gains
+            reduced square-trajectory error approximately sevenfold and twofold on the two platforms
+            at comparable command torque RMS.
           </p>
         </div>
       </div>
@@ -148,10 +142,10 @@
             The extended state observer of ADRC estimates and cancels the lumped disturbance, so the
             loop needs little model knowledge, yet one number is still left to the designer: the
             <b>control-input gain</b> <i>b</i><sub>0</sub>, which scales the control effort and is
-            usually tuned joint by joint on the machine. MRA-ADRC closes that gap with two ideas: a
-            <b>reference-model mismatch</b> that tells, from motion alone, whether the current gain
-            estimate is too high or too low, and a <b>cycle-envelope dead-zone</b> that decides when
-            the adaptation is done.
+            usually tuned joint by joint on the machine. MRA-ADRC addresses this with two elements:
+            a <b>reference-model mismatch</b>, measured from motion alone, that drives a projected
+            scalar update of the gain, and a <b>cycle-envelope stopping rule</b> that freezes the
+            gain for subsequent operation.
           </p>
         </div>
 
@@ -161,8 +155,8 @@
                alt="Block diagram of MRA-ADRC. An ADRC loop on top drives the plant, a reference model below runs on the same excitation, their mismatch feeds the adaptation, and the gain estimate is returned into the ADRC loop at two places.">
           <figcaption>MRA-ADRC architecture. The plant's motion from the ADRC loop (top) and the
             reference model's motion (bottom) meet at the mismatch, and the adaptation returns
-            <i>b&#770;</i>, the only signal it feeds back, into the ADRC loop at two places (dashed
-            red).</figcaption>
+            <i>b&#770;</i> into the ADRC loop at two places (dashed red). The gate and the stop act
+            only on the gain update.</figcaption>
         </figure>
         <!--/ Method overview. -->
 
@@ -170,13 +164,14 @@
         <h3 class="title is-4">1. A Reference-Model Mismatch Drives a Scalar Adaptation</h3>
         <div class="content has-text-justified">
           <p>
-            During a bounded sinusoidal calibration motion, a reference model runs on the same
-            excitation as the plant. The absolute-value position&ndash;velocity mismatch between the
-            two responses is a scalar whose sign says whether <i>b&#770;</i> is above or below the
-            true gain, and a projected gradient step on that scalar updates <i>b&#770;</i> online.
-            No model-derived regressor and no torque sensing are required, and <i>b&#770;</i> is the
-            only signal returned to the ADRC loop, where it enters the control law and the observer
-            at the two dashed points of the diagram.
+            During bounded sinusoidal calibration, position and velocity are compared with a
+            reference model through an absolute-value mismatch. A projected scalar update adjusts
+            the control-input gain. The negative update direction is motivated by a locally
+            increasing gated cycle-mean mismatch, assessed with fixed-gain probes. Instantaneous
+            mismatch is also affected by phase differences and residual disturbances; it does not
+            identify the sign of the physical gain error. No model-derived regressor or joint torque
+            measurements are required. The commissioned gain is a control setting, not necessarily
+            the physical inverse inertia.
           </p>
         </div>
         <!--/ Insight 1. -->
@@ -185,12 +180,12 @@
         <h3 class="title is-4">2. A Cycle-Envelope Dead-Zone Stops the Adaptation Automatically</h3>
         <div class="content has-text-justified">
           <p>
-            The adaptation is frozen once the mismatch envelope stays below a prescribed width for
-            two consecutive cycles of the calibration motion. The width is set from the hardware
-            floor, measured by a short probe pass before adaptation starts, so the stop is decided
-            by the machine rather than by an operator watching a plot. On the Indy7 each joint
-            stops within 20 to 57 seconds, and the six frozen values form the profile deployed in all
-            closed-loop evaluations on that arm.
+            Fixed-gain probes around a working prior set the stopping threshold to the smallest
+            measured probe envelope. This is a finite-probe estimate, not an identified global
+            minimum. Adaptation freezes after two qualifying excitation cycles. The four probes
+            require 80 s per joint; the reported adaptation durations exclude probing and
+            positioning. All six joints stopped in 20&ndash;57 s on Indy7 and 26&ndash;70 s on Elfin
+            under the tested conditions.
           </p>
         </div>
         <!--/ Insight 2. -->
@@ -199,27 +194,26 @@
         <h3 class="title is-4">3. What the Analysis Guarantees</h3>
         <div class="content has-text-justified">
           <ul>
-            <li>Uniformly ultimately bounded tracking on an analytical safe set of gain estimates.</li>
-            <li>Local exponential convergence of the averaged gain estimate to a residual-shifted
-              equilibrium.</li>
-            <li>A stopping-error bound that is linear in the dead-zone width.</li>
+            <li>Conditional tracking boundedness while the gain and trajectory remain in the
+              analytical admissible sets and the gain-rate condition holds.</li>
+            <li>Local exponential convergence of the averaged, unstopped gain dynamics under a
+              positive mean-mismatch slope.</li>
+            <li>A conditional stopping-error bound that accounts for the threshold and residual
+              bias.</li>
           </ul>
+          <p>
+            These results do not prove global convergence, exact physical-gain identification, or
+            termination from arbitrary initial gains.
+          </p>
           <p>The main contributions of the paper can be summarized as follows.</p>
           <ul>
-            <li>An online gain-commissioning law that adds model-reference adaptation to the ADRC
-              loop, with proofs of bounded tracking, local convergence and stopping accuracy.</li>
-            <li>A fully automatic commissioning procedure whose commissioned profile transfers
-              across units of the same model, so one run for each model replaces the unit-by-unit
-              factory tuning pass.</li>
-            <li>Hardware validation of the closed-loop benefit, namely better tracking than the
-              deployed production controller under a 4.5 kg payload absent at commissioning, at
-              matched actuator effort.</li>
-            <li>Validation on multiple Neuromeka Indy7 units, a URDF-matched simulation, and a
-              second manufacturer's Huayan Robotics Elfin E10-L, where the closed-loop result
-              replicates and the full procedure commissions all six joints automatically.</li>
-            <li>An evaluation that holds the ADRC loop fixed and changes only the gain, isolating
-              the contribution of commissioning itself, on both arms and on a Cartesian straight
-              line.</li>
+            <li>A motion-based scalar update and cycle-envelope stopping rule, calibrated by
+              fixed-gain probes and integrated into a 1 kHz torque loop.</li>
+            <li>Conditional tracking and local averaged-gain analysis that distinguishes a useful
+              commissioned control setting from exact physical-parameter identification.</li>
+            <li>Hardware evaluation on two robot models: automatic stopping on all six joints of
+              each model, unchanged reuse of one Indy7 profile on four other units under added
+              payload, and fixed-loop comparisons isolating gain replacement on both platforms.</li>
           </ul>
         </div>
         <!--/ Guarantees and contributions. -->
@@ -233,13 +227,14 @@
         <h2 class="title is-3">Hardware Results</h2>
         <div class="content has-text-justified">
           <p>
-            All results below are measured on hardware. On the Indy7 the commissioned profile
-            recovers <b>88%</b> of the tracking degradation caused by the initial gain mismatch,
-            and one profile deployed on four units tracks a 4.5 kg payload with <b>16&times;</b>
-            lower error than the production controller at equal command torque. With the ADRC loop
-            held fixed, swapping in the commissioned gain brings the tool-tip error on a Cartesian
-            line from <b>4.44 mm</b> under PID to <b>0.45 mm</b>, and the same procedure
-            commissions all six joints of a second manufacturer's arm.
+            Unloaded commissioning reached the cycle-envelope stopping criterion on all six joints
+            of both robot models. One Indy7 gain profile was reused unchanged on four other units
+            under a 4.5 kg payload, reducing aggregate tracking error approximately
+            <b>sixteenfold</b> relative to the deployed production controller. Holding the ADRC loop
+            fixed and replacing overestimated gains reduced square-trajectory error approximately
+            <b>sevenfold</b> on Indy7 and <b>twofold</b> on Elfin, at comparable command torque RMS.
+            On the Cartesian line, forward-kinematics tool RMS error decreased from 2.06 to
+            <b>0.45 mm</b> on Indy7 and from 0.59 to <b>0.18 mm</b> on Elfin.
           </p>
         </div>
 
@@ -282,11 +277,12 @@
         <h3 class="title is-4">One Profile Across Four Units</h3>
         <div class="content has-text-justified">
           <p>
-            The commissioned profile is deployed unchanged on four Indy7 units that were not used
-            for commissioning, and each carries a 4.5 kg payload absent at commissioning. Against
-            the deployed production controller the aggregate tracking error is 15.8&times; to
-            16.6&times; lower while the command torque RMS is equal within a few percent, so the
-            improvement does not come from extra effort.
+            The commissioned profile was deployed unchanged on four other Indy7 units, each carrying
+            a 4.5 kg payload absent during commissioning. Aggregate tracking error was approximately
+            sixteenfold lower than with the deployed production controller, while aggregate command
+            torque RMS differed by only a few percent. The controllers retained their respective
+            settings; their feedback gains and bandwidths were not matched. These results support
+            profile reuse within the tested units and tasks.
           </p>
         </div>
         <figure class="paper-figure">
@@ -307,8 +303,8 @@
             The comparisons above mix the commissioned gain with the observer. This evaluation holds
             the ADRC loop fixed and swaps only <i>b</i><sub>0</sub>, with a joint PID loop as a
             reference, under the 4.5 kg payload on both arms. Joint entries are quadratic means over
-            the six joints, the tool error is measured on the Cartesian line, and torque is the
-            commanded RMS on the square.
+            the six joints, the tool error is the forward-kinematics error of the joint positions on the Cartesian
+            line, and torque is the command torque RMS on the square.
           </p>
         </div>
         <div class="table-container">
@@ -326,7 +322,7 @@
             </thead>
             <tbody>
               <tr><th rowspan="3">Indy7</th><td>PID baseline</td><td class="has-text-right">6.61</td><td class="has-text-right">3.71</td><td class="has-text-right">4.44</td><td class="has-text-right">6.20</td><td class="has-text-right">42.9</td></tr>
-              <tr><td>ADRC, <i>b</i><sub>0</sub> = 1.0 (uncommissioned)</td><td class="has-text-right">10.69</td><td class="has-text-right">1.63</td><td class="has-text-right">2.06</td><td class="has-text-right">7.59</td><td class="has-text-right">44.5</td></tr>
+              <tr><td>ADRC, <i>b</i><sub>0</sub> = 1.0 (overestimated)</td><td class="has-text-right">10.69</td><td class="has-text-right">1.63</td><td class="has-text-right">2.06</td><td class="has-text-right">7.59</td><td class="has-text-right">44.5</td></tr>
               <tr class="is-ours"><td>MRA-ADRC</td><td class="has-text-right">1.54</td><td class="has-text-right">0.42</td><td class="has-text-right">0.45</td><td class="has-text-right">2.55</td><td class="has-text-right">42.7</td></tr>
               <tr><th rowspan="3">Elfin E10-L</th><td>PID baseline</td><td class="has-text-right">41.28</td><td class="has-text-right">53.92</td><td class="has-text-right">128.06</td><td class="has-text-right">168.77</td><td class="has-text-right">50.2</td></tr>
               <tr><td>ADRC, 4&times; commissioned <i>b</i><sub>0</sub></td><td class="has-text-right">0.88</td><td class="has-text-right">0.57</td><td class="has-text-right">0.59</td><td class="has-text-right">2.95</td><td class="has-text-right">49.3</td></tr>
@@ -338,7 +334,7 @@
           <p>
             In the clips below the three controllers run the same task under the same payload.
             Left to right in each clip: the PID baseline, the same ADRC loop with the
-            uncommissioned gain, and MRA-ADRC. The dot marks the tool, its error from the
+            overestimated gain, and MRA-ADRC. The dot marks the tool, its error from the
             commanded path is drawn magnified as labeled, and the lower strip traces the
             commanded (dashed) and actual tool path. All clips play at 2.4&times; speed.
           </p>
@@ -350,7 +346,7 @@
                 <source src="./static/videos/clips/indy7_line.mp4" type="video/mp4">
               </video>
               <figcaption>Indy7, Cartesian straight line along <i>y</i> with 4.5 kg. The
-                uncommissioned gain is <i>b</i><sub>0</sub> = 1.0.</figcaption>
+                overestimated gain is <i>b</i><sub>0</sub> = 1.0.</figcaption>
             </figure>
           </div>
           <div class="column is-full">
@@ -407,9 +403,10 @@
         <h3 class="title is-4">Experimental Platforms</h3>
         <div class="content has-text-justified">
           <p>
-            Both arms run in torque mode at the joint level and carry the same 4.5 kg payload. The
-            commissioning procedure, including the hardware floor measurement, was run end to end
-            on both, and the same closed-loop evaluation was repeated on each.
+            Both arms run in joint torque mode at 1 kHz. Commissioning is performed unloaded. The
+            subsequent tracking evaluations include tests with the same 4.5 kg tool payload. The
+            complete probe-and-stop commissioning procedure was run on each robot model, and
+            gain-replacement tests used the same ADRC structure within each platform.
           </p>
         </div>
         <div class="columns is-centered">
@@ -438,18 +435,7 @@
 </section>
 
 
-<section class="section" id="BibTeX">
-  <div class="container is-max-desktop content">
-    <h2 class="title">BibTeX</h2>
-    <pre><code>@article{anonymous2026mraadrc,
-  author    = {Anonymous},
-  title     = {Model-Reference Adaptive Active Disturbance Rejection Control
-               for Online Control-Gain Commissioning of Robot Manipulators},
-  journal   = {[venue]},
-  year      = {[XXXX]},
-}</code></pre>
-  </div>
-</section>
+<!-- BibTeX: add after acceptance. -->
 
 
 <footer class="footer">
