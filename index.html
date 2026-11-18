@@ -188,6 +188,16 @@
             under the tested conditions.
           </p>
         </div>
+        <figure class="paper-figure paper-figure--wide">
+          <video autoplay muted loop playsinline controls>
+            <source src="./static/videos/clips/stop_rule.mp4" type="video/mp4">
+          </video>
+          <figcaption>How the stop is decided, on the logged base joint of one Indy7. Stage A: four
+            fixed-gain probes with adaptation off give the settled cycle envelope at each gain, and
+            the smallest one sets the threshold (written &delta; in the clip). Stage B: the gain
+            adapts from 1.0, and the run freezes once two consecutive cycle envelopes stay below
+            the threshold, here after 42.5 s.</figcaption>
+        </figure>
         <!--/ Insight 2. -->
 
         <!-- Guarantees and contributions. -->
