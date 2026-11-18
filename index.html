@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="description"
-        content="MRA-ADRC: a model-reference adaptive active disturbance rejection control framework that commissions the ADRC control-input gain b0 online on robot manipulators.">
+        content="MRA-ADRC is a model-reference adaptive active disturbance rejection control framework that commissions the ADRC control-input gain b0 online on robot manipulators.">
   <meta name="keywords" content="ADRC, MRA-ADRC, model-reference adaptive control, gain commissioning, robot manipulator">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MRA-ADRC: Model-Reference Adaptive ADRC for Online Control-Gain Commissioning of Robot Manipulators</title>
+  <title>MRA-ADRC | Model-Reference Adaptive ADRC for Online Control-Gain Commissioning of Robot Manipulators</title>
 
-  <meta property="og:title" content="MRA-ADRC: Online Control-Gain Commissioning for Robot Manipulators">
+  <meta property="og:title" content="MRA-ADRC | Online Control-Gain Commissioning for Robot Manipulators">
   <meta property="og:description" content="Model-reference adaptive ADRC that commissions the control-input gain on the machine, validated on Neuromeka Indy7 and Huayan Elfin E10-L arms.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://mra-adrc.github.io/">
@@ -86,7 +86,7 @@
     </div>
     <div class="content has-text-centered">
       <p>
-        Forty-second overview, no audio: the idea, on-machine commissioning of the gain on the
+        Forty-second overview without audio, covering the idea, on-machine commissioning of the gain on the
         Indy7, one profile reused on four other units, and payload tracking on the Indy7 and the
         Elfin E10-L.
       </p>
@@ -109,7 +109,7 @@
             cycle-envelope stopping rule into a 1 kHz robot torque loop. The update uses measured
             position&ndash;velocity mismatch without a model-derived regressor or joint torque
             measurements. Fixed-gain probes around a working prior set the adaptation rate and
-            stopping threshold; two qualifying cycles freeze the gain for subsequent operation.
+            stopping threshold, and two qualifying cycles freeze the gain for subsequent operation.
             Conditional tracking boundedness, local averaged-gain convergence, and a stopping-error
             bound explain the roles of gain sensitivity and residual bias.
           </p>
@@ -141,9 +141,9 @@
         <div class="content has-text-justified">
           <p>
             The extended state observer of ADRC estimates and cancels the lumped disturbance, so the
-            loop needs little model knowledge, yet one number is still left to the designer: the
+            loop needs little model knowledge, yet one number is still left to the designer, the
             <b>control-input gain</b> <i>b</i><sub>0</sub>, which scales the control effort and is
-            usually tuned joint by joint on the machine. MRA-ADRC addresses this with two elements:
+            usually tuned joint by joint on the machine. MRA-ADRC addresses this with two elements,
             a <b>reference-model mismatch</b>, measured from motion alone, that drives a projected
             scalar update of the gain, and a <b>cycle-envelope stopping rule</b> that freezes the
             gain for subsequent operation.
@@ -169,7 +169,7 @@
             reference model through an absolute-value mismatch. A projected scalar update adjusts
             the control-input gain. The negative update direction is motivated by a locally
             increasing gated cycle-mean mismatch, assessed with fixed-gain probes. Instantaneous
-            mismatch is also affected by phase differences and residual disturbances; it does not
+            mismatch is also affected by phase differences and residual disturbances, so it does not
             identify the sign of the physical gain error. No model-derived regressor or joint torque
             measurements are required. The commissioned gain is a control setting, not necessarily
             the physical inverse inertia.
@@ -184,7 +184,7 @@
             Fixed-gain probes around a working prior set the stopping threshold to the smallest
             measured probe envelope. This is a finite-probe estimate, not an identified global
             minimum. Adaptation freezes after two qualifying excitation cycles. The four probes
-            require 80 s per joint; the reported adaptation durations exclude probing and
+            require 80 s per joint, and the reported adaptation durations exclude probing and
             positioning. All six joints stopped in 20&ndash;57 s on Indy7 and 26&ndash;70 s on Elfin
             under the tested conditions.
           </p>
@@ -193,9 +193,9 @@
           <video autoplay muted loop playsinline controls>
             <source src="./static/videos/clips/stop_rule.mp4" type="video/mp4">
           </video>
-          <figcaption>How the stop is decided, on the logged base joint of one Indy7. Stage A: four
+          <figcaption>How the stop is decided, on the logged base joint of one Indy7. In Stage A, four
             fixed-gain probes with adaptation off give the settled cycle envelope at each gain, and
-            the smallest one sets the threshold (written &delta; in the clip). Stage B: the gain
+            the smallest one sets the threshold (written &delta; in the clip). In Stage B, the gain
             adapts from 1.0, and the run freezes once two consecutive cycle envelopes stay below
             the threshold, here after 42.5 s.</figcaption>
         </figure>
@@ -222,7 +222,7 @@
               fixed-gain probes and integrated into a 1 kHz torque loop.</li>
             <li>Conditional tracking and local averaged-gain analysis that distinguishes a useful
               commissioned control setting from exact physical-parameter identification.</li>
-            <li>Hardware evaluation on two robot models: automatic stopping on all six joints of
+            <li>Hardware evaluation on two robot models, with automatic stopping on all six joints of
               each model, unchanged reuse of one Indy7 profile on four other units under added
               payload, and fixed-loop comparisons isolating gain replacement on both platforms.</li>
           </ul>
@@ -292,13 +292,13 @@
             a 4.5 kg payload absent during commissioning. Aggregate tracking error was approximately
             sixteenfold lower than with the deployed production controller, while aggregate command
             torque RMS differed by only a few percent. The controllers retained their respective
-            settings; their feedback gains and bandwidths were not matched. These results support
+            settings, and their feedback gains and bandwidths were not matched. These results support
             profile reuse within the tested units and tasks.
           </p>
         </div>
         <figure class="paper-figure">
           <img src="./static/images/compare_rms_units_spread.png"
-               alt="Three bar charts: tracking error RMS by joint under MRA-ADRC, under the production baseline, and the standard deviation across units.">
+               alt="Three bar charts of tracking error RMS by joint under MRA-ADRC, under the production baseline, and the standard deviation across units.">
           <figcaption>Tracking error RMS by joint, grouped by controller. Left, the four units under
             MRA-ADRC. Center, the same units under the production baseline, on its own scale.
             Right, the standard deviation across the four units on a logarithmic scale. The shaded
@@ -344,7 +344,7 @@
         <div class="content has-text-justified">
           <p>
             In the clips below the three controllers run the same task under the same payload.
-            Left to right in each clip: the PID baseline, the same ADRC loop with the
+            Left to right in each clip are the PID baseline, the same ADRC loop with the
             overestimated gain, and MRA-ADRC. The dot marks the tool, its error from the
             commanded path is drawn magnified as labeled, and the lower strip traces the
             commanded (dashed) and actual tool path. All clips play at 2.4&times; speed.
